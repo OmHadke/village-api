@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Country {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  states    State[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model State {
+  id         Int        @id @default(autoincrement())
+  code       String     @unique
+  name       String
+  countryId  Int
+  country    Country    @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  districts  District[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([countryId])
+}
+
+model District {
+  id           Int           @id @default(autoincrement())
+  code         String
+  name         String
+  stateId      Int
+  state        State         @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  subDistricts SubDistrict[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([stateId, code])
+  @@index([stateId])
+}
+
+model SubDistrict {
+  id         Int       @id @default(autoincrement())
+  code       String
+  name       String
+  districtId Int
+  district   District  @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  villages   Village[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([districtId, code])
+  @@index([districtId])
+}
+
+model Village {
+  id            Int         @id @default(autoincrement())
+  code          String      @unique
+  name          String
+  subDistrictId Int
+  subDistrict   SubDistrict @relation(fields: [subDistrictId], references: [id], onDelete: Restrict)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([subDistrictId])
+  @@index([name])
+}
